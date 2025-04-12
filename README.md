@@ -65,7 +65,7 @@ Get-WmiObject -Class Win32_Service | Where-Object { $_.PathName -notmatch '"' -a
 - 書き換え可能なUnquated Pathの列挙：
 ```
 $services = Get-WmiObject -Class Win32_Service | Where-Object { $_.PathName -notmatch '"' -and $_.PathName -notlike "*svchost*" } | ForEach-Object { if ($_.PathName -match '^(.*?\.exe)') {$matches[1]} }; 
-foreach($service in $services) {icacls $service | ForEach-Object { if((($_ -match "\(F\)") -or ($_ -match "\(M\)")) -and (($_ -notmatch "Administrator") -and ($_ -notmatch "NT AUTHORITY\\SYSTEM") -and ($_ -notmatch "NT SERVICE\\TrustedInstaller"))) {$service; $_} }}
+foreach($service in $services) {icacls $service | ForEach-Object { if((($_ -match "\(F\)") -or ($_ -match "\(M\)") -or ($_ -match "\(W\)")) -and (($_ -notmatch "Administrator") -and ($_ -notmatch "NT AUTHORITY\\SYSTEM") -and ($_ -notmatch "NT SERVICE\\TrustedInstaller"))) {$service; $_} }}
 ```
 
 ## タスク
@@ -92,7 +92,7 @@ $tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | Select-St
 $tasknames = schtasks /query /fo list /v | Select-String "タスク名" | ForEach-Object { ($_ -split ":")[1].Trim() | Where-Object {$_ -notmatch "\\Microsoft"} }
 $runtasks = $tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | Select-String "実行するタスク" | ForEach-Object {($_ -split ": ")[1].Trim()}
 $filepath = $runtasks | ForEach-Object {if (($_ -match '^"?(.*?\.exe)') -or ($_ -match '^"?(.*?\.bat)') ) {$matches[1]} }
-foreach($file in $filepath) {icacls $file | ForEach-Object { if((($_ -match "\(F\)") -or ($_ -match "\(M\)")) -and (($_ -notmatch "Administrator") -and ($_ -notmatch "NT AUTHORITY\\SYSTEM"))) {$file; $_} }}
+foreach($file in $filepath) {icacls $file | ForEach-Object { if((($_ -match "\(F\)") -or ($_ -match "\(M\)") -or ($_ -match "\(M\)")) -and (($_ -notmatch "Administrator") -and ($_ -notmatch "NT AUTHORITY\\SYSTEM"))) {$file; $_} }}
 ```
 
 ## エンコード

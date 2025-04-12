@@ -92,7 +92,7 @@ $tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | Select-St
 $tasknames = schtasks /query /fo list /v | Select-String "タスク名" | ForEach-Object { ($_ -split ":")[1].Trim() | Where-Object {$_ -notmatch "\\Microsoft"} }
 $runtasks = $tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | Select-String "実行するタスク" | ForEach-Object {($_ -split ": ")[1].Trim()}
 $filepath = $runtasks | ForEach-Object {if (($_ -match '^"?(.*?\.exe)') -or ($_ -match '^"?(.*?\.bat)') ) {$matches[1]} }
-foreach($file in $filepath) {icacls $file | ForEach-Object { if((($_ -match "\(F\)") -or ($_ -match "\(M\)") -or ($_ -match "\(M\)")) -and (($_ -notmatch "Administrator") -and ($_ -notmatch "NT AUTHORITY\\SYSTEM"))) {$file; $_} }}
+foreach($file in $filepath) {icacls $file | ForEach-Object { if((($_ -match "\(F\)") -or ($_ -match "\(M\)") -or ($_ -match "\(W\)")) -and (($_ -notmatch "Administrator") -and ($_ -notmatch "NT AUTHORITY\\SYSTEM"))) {$file; $_} }}
 ```
 
 ## エンコード

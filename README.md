@@ -11,6 +11,15 @@ $folders = Get-ChildItem -Path "C:\Windows" -Directory -Recurse -ErrorAction Sil
 foreach($folder in $folders) {icacls $folder | ForEach-Object { if((($_ -match "\(F\)") -or ($_ -match "\(M\)") -or ($_ -match "\(W\)")) -and (($_ -notmatch "Administrator") -and ($_ -notmatch "NT AUTHORITY\\") -and ($_ -notmatch "NT SERVICE\\") -and ($_ -notmatch "CREATOR OWNER") -and ($_ -notmatch "BUILTIN\\Backup Operators") -and ($_ -notmatch "RESTRICTED SERVICES\\"))) {$folder; $_} }}
 ```
 
+## バイナリファイル内の文字列ダンプ
+```
+$exeFilePath = "[EXEファイルのパス]"
+$bytes = [System.IO.File]::ReadAllBytes($exeFilePath)
+$chars = [System.Text.Encoding]::ASCII.GetString($bytes)
+$strings = $chars -split "`0" | Where-Object { $_ -match "\w{4,}"}
+$strings | ForEach-Object { Write-Output $_ }
+```
+
 ## ユーザ
 <details>
 <summary>ユーザの確認</summary>

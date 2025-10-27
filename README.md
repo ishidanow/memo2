@@ -137,7 +137,12 @@ $users = $tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | 
 $files = $tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | Select-String "実行するタスク" | ForEach-Object {($_ -split ": ")[1].Trim()}
 for($i=0; $i -lt $tasknames.Count; $i++){ [PSCustomObject]@{TaskName=$tasknames[$i]; User=$users[$i]; File=$files[$i]}}
 ```			
-		
+
+- タスクの起動トリガーの確認：
+```
+(Get-ScheduledTask -TaskName [タスク名]).Triggers
+```
+
 - 書き換え可能なスケジュールタスクの列挙：
 ```
 $tasknames = schtasks /query /fo list /v | Select-String "タスク名" | ForEach-Object { ($_ -split ":")[1].Trim() | Where-Object {$_ -notmatch "\\Microsoft"} }

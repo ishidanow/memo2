@@ -130,6 +130,8 @@ schtasks /query /tn [タスク名] /fo list /v
 	
 - スケジュールタスクの実行ユーザ＋バイナリ列挙：
 ```
+Get-ScheduledTask | where {$_.TaskPath -notlike "\Microsoft*"} | ForEach-Object {[PSCustomObject]@{TaskName=$_.TaskName;UserId=$_.Principal.UserId;Action=($_.Actions|ForEach-Object{$_.Execute})-join', '}} | Format-Table -AutoSize
+
 $tasknames = schtasks /query /fo list /v | Select-String "タスク名" | ForEach-Object { ($_ -split ":")[1].Trim() | Where-Object {$_ -notmatch "\\Microsoft"} }
 $users = $tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | Select-String "ユーザーとして実行" | ForEach-Object {($_ -split ": ")[1].Trim()}
 $files = $tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | Select-String "実行するタスク" | ForEach-Object {($_ -split ": ")[1].Trim()}

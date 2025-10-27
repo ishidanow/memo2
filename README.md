@@ -128,10 +128,12 @@ Get-ScheduledTask | where {$_.TaskPath -notlike "\Microsoft*"} | ft TaskName,Tas
 schtasks /query /tn [タスク名] /fo list /v
 ```
 	
-- スケジュールタスクのバイナリ列挙：
+- スケジュールタスクの実行ユーザ＋バイナリ列挙：
 ```
 $tasknames = schtasks /query /fo list /v | Select-String "タスク名" | ForEach-Object { ($_ -split ":")[1].Trim() | Where-Object {$_ -notmatch "\\Microsoft"} }
-$tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | Select-String "実行するタスク" | ForEach-Object {($_ -split ": ")[1].Trim()}
+$users = $tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | Select-String "ユーザーとして実行" | ForEach-Object {($_ -split ": ")[1].Trim()}
+$files = $tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | Select-String "実行するタスク" | ForEach-Object {($_ -split ": ")[1].Trim()}
+for($i=0; $i -lt $tasknames.Count; $i++){ [PSCustomObject]@{TaskName=$tasknames[$i]; User=$users[$i]; File=$files[$i]}}
 ```			
 		
 - 書き換え可能なスケジュールタスクの列挙：

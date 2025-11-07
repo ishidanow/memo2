@@ -118,7 +118,7 @@ Get-WmiObject -Class Win32_Service |  ForEach-Object { "$($_.Name) : $($_.PathNa
 
 - 書き換え可能なサービスバイナリの列挙：
 ```
-Get-CimInstance Win32_Service | Where-Object { $_.PathName -notlike "*svchost*" } | ForEach-Object { if ($_.PathName -match '["]?([^"]*?\.exe)') { $bin = ($matches[1] -replace '^"', ''); icacls "`"$bin`"" | ForEach-Object { if((($_ -match "\(F\)") -or ($_ -match "\(M\)") -or ($_ -match "\(W\)")) -and (($_ -notmatch "Administrator") -and ($_ -notmatch "NT AUTHORITY\\SYSTEM") -and ($_ -notmatch "NT SERVICE\\TrustedInstaller"))) {$bin; $_} } } }
+Get-CimInstance Win32_Service | Where-Object { $_.PathName -notlike "*svchost*" } | ForEach-Object { if ($_.PathName -match '["]?([^"]*?\.exe)') { $bin = ($matches[1] -replace '^"', ''); icacls "`"$bin`"" | ForEach-Object { if((($_ -match "\(F\)") -or ($_ -match "\(M\)") -or ($_ -match "\(W\)")) -and (($_ -notmatch "Administrator") -and ($_ -notmatch "NT AUTHORITY\\SYSTEM") -and ($_ -notmatch "NT SERVICE\\TrustedInstaller"))) {"[+] $bin"; $_} } } }
 ```
 
 - Unquated Pathの列挙：

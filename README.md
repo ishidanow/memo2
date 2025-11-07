@@ -109,11 +109,22 @@ Get-ChildItem "C:\Users\$env:USERNAME\Start Menu\Programs\Startup"
 ## サービス
 - サービス一覧の表示：
 ```
+Get-CimInstance -ClassName Win32_Service | Select-Object Name, StartName, PathName, State | Where-Object { $_.PathName -notlike "*svchost*" } | Format-Table -AutoSize -wrap
+```
+```
 Get-Service | ft -AutoSize
 Get-WmiObject -Class Win32_Service |  ForEach-Object { "$($_.Name) : $($_.PathName)" }
 ```
-		
+
+- 書き換え可能なサービスバイナリの列挙：
+```
+Get-CimInstance Win32_Service | Where-Object { $_.PathName -notlike "*svchost*" } | ForEach-Object { if ($_.PathName -match '["]?([^"]*?\.exe)') { $bin = ($matches[1] -replace '^"', ''); icacls "`"$bin`"" | ForEach-Object { if((($_ -match "\(F\)") -or ($_ -match "\(M\)") -or ($_ -match "\(W\)")) -and (($_ -notmatch "Administrator") -and ($_ -notmatch "NT AUTHORITY\\SYSTEM") -and ($_ -notmatch "NT SERVICE\\TrustedInstaller"))) {$bin; $_} } } }
+```
+
 - Unquated Pathの列挙：
+```
+Get-CimInstance -ClassName Win32_Service | Select-Object Name, StartName, PathName, State | Where-Object { $_.PathName -notmatch '"' -and $_.PathName -notlike "*svchost*" } | Format-Table -AutoSize -wrap
+```
 ```
 Get-WmiObject -Class Win32_Service | Where-Object { $_.PathName -notmatch '"' -and $_.PathName -notlike "*svchost*" } | ForEach-Object { if ($_.PathName -match '^(.*?\.exe)') {$matches[1]} }
 ```		
@@ -139,8 +150,9 @@ schtasks /query /tn [タスク名] /fo list /v
 	
 - スケジュールタスクの実行ユーザ＋バイナリ列挙：
 ```
-Get-ScheduledTask | where {$_.TaskPath -notlike "\Microsoft*"} | ForEach-Object {[PSCustomObject]@{TaskName=$_.TaskName;UserId=$_.Principal.UserId;Action=($_.Actions|ForEach-Object{$_.Execute})-join', ';Args=($_.Actions | ForEach-Object { $_.Arguments }) -join ', '}} | Format-Table -AutoSize
-
+Get-ScheduledTask | where {$_.TaskPath -notlike "\Microsoft*"} | ForEach-Object {[PSCustomObject]@{TaskName=$_.TaskName;UserId=$_.Principal.UserId;Action=($_.Actions|ForEach-Object{$_.Execute})-join', ';Args=($_.Actions | ForEach-Object { $_.Arguments }) -join ', '}} | Format-Table -AutoSize -wrap
+```
+```
 $tasknames = schtasks /query /fo list /v | Select-String "タスク名" | ForEach-Object { ($_ -split ":")[1].Trim() | Where-Object {$_ -notmatch "\\Microsoft"} }
 $users = $tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | Select-String "ユーザーとして実行" | ForEach-Object {($_ -split ": ")[1].Trim()}
 $files = $tasknames | ForEach-Object { schtasks /query /tn "$_" /fo list /v } | Select-String "実行するタスク" | ForEach-Object {($_ -split ": ")[1].Trim()}
